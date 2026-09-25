@@ -65,7 +65,9 @@ def extract_messages(payload):
 
 def send_whatsapp_text(to, text):
     key=os.getenv("INFOBIP_API_KEY")
-    base=os.getenv("INFOBIP_BASE_URL","").rstrip("/")
+    base=os.getenv("INFOBIP_BASE_URL","").strip().rstrip("/")
+    if base and not base.startswith(("http://","https://")):
+        base="https://"+base
     sender=os.getenv("INFOBIP_WHATSAPP_SENDER")
     if not (key and base and sender and to):
         return {"sent":False,"reason":"live Infobip configuration incomplete"}
