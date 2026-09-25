@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: infobip-solution-engineering-demo
+    runtime: python
+    plan: free
+    buildCommand: python -m unittest -v test_app.py
+    startCommand: python app.py
+    healthCheckPath: /health
+    envVars:
+      - key: INFOBIP_API_KEY
+        sync: false
+      - key: INFOBIP_BASE_URL
+        sync: false
+      - key: INFOBIP_WHATSAPP_SENDER
+        sync: false
+      - key: WEBHOOK_TOKEN
+        generateValue: true
