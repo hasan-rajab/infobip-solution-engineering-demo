@@ -87,6 +87,11 @@ def send_whatsapp_text(to, text):
         return {"sent":False,"error":type(exc).__name__}
 
 def handle_event(payload, live=False):
+    if live:
+        expected_to=os.getenv("INFOBIP_WHATSAPP_SENDER")
+        raw_results=payload.get("results",[]) if isinstance(payload,dict) else []
+        if expected_to and raw_results and any(str(e.get("to","")) != expected_to for e in raw_results if e.get("to")):
+            return {"results":[],"mode":"LIVE","error":"Unexpected destination sender"}
     messages=extract_messages(payload)
     if not messages:
         return {"results":[],"mode":"LIVE" if live else "LOCAL_SIMULATION","error":"No supported text messages found"}
@@ -129,11 +134,9 @@ class Handler(BaseHTTPRequestHandler):
         path=urlparse(self.path).path
         if path not in ("/webhook","/simulate"):
             return self._json(404,{"error":"not found"})
-        if path=="/webhook":
-            expected=os.getenv("WEBHOOK_TOKEN")
-            supplied=self.headers.get("X-Webhook-Token")
-            if expected and supplied != expected:
-                return self._json(401,{"error":"unauthorized"})
+        # Trial sender resource-level forwarding does not attach our custom
+        # X-Webhook-Token header. Keep this endpoint HTTPS-only at Render and
+        # validate the destination sender inside the payload before replying.
         try:
             size=int(self.headers.get("Content-Length","0"))
             if size<=0 or size>100000:
