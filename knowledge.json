@@ -1,0 +1,17 @@
+[
+  {
+    "keywords":["ameen","what is ameen"],
+    "answer":"AMEEN is a fictional SME financial-visibility concept; no live bank accounts are connected.",
+    "source":"Synthetic AMEEN concept brief"
+  },
+  {
+    "keywords":["onboarding","get started","sign up"],
+    "answer":"In this synthetic demo, onboarding explains the concept and routes account-specific actions to an authorized representative.",
+    "source":"Synthetic onboarding FAQ"
+  },
+  {
+    "keywords":["security","privacy","safe","data"],
+    "answer":"This demo uses synthetic content, avoids storing message text in its audit log, and escalates sensitive or account-specific requests.",
+    "source":"Demo security and privacy policy"
+  }
+]
