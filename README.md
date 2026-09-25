@@ -29,7 +29,6 @@ Set these in the hosting provider, never in source control:
 - `INFOBIP_API_KEY`
 - `INFOBIP_BASE_URL`
 - `INFOBIP_WHATSAPP_SENDER`
-- `WEBHOOK_TOKEN`
 
 See `.env.example` for non-secret placeholders.
 
@@ -49,4 +48,9 @@ Then open `http://localhost:8000/`.
 - `GET /health`
 - `GET /audit`
 - `POST /simulate` safe local/deployed simulation
-- `POST /webhook` live webhook path; optional `X-Webhook-Token` check when `WEBHOOK_TOKEN` is configured
+- `POST /webhook` live inbound path for the configured Infobip sender
+
+
+## Webhook security note
+
+For the Infobip trial sender, the first live test uses the sender's direct **Forward to HTTP** configuration over HTTPS. The application validates that inbound payloads target the configured Infobip sender before sending a reply. For a stronger production-style setup, switch the sender to **Apply subscription** and use Infobip Subscriptions with HMAC authentication/signature verification. Do not describe this demo as production-secure until that hardening is implemented and tested.
