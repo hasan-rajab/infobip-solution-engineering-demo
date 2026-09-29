@@ -1,30 +1,103 @@
 # Infobip Solution Engineering Demo
 
-Portfolio-grade synthetic customer-messaging integration built to demonstrate solution-engineering fundamentals with Infobip WhatsApp APIs.
+**A customer-messaging integration case showing how a simple conversational workflow can be made safe, observable and integration-ready.**
 
-## Verified milestone
+This portfolio demo was built around a solution-engineering problem:
 
-Before this repository was deployed, a real authenticated Infobip WhatsApp trial-template API request returned HTTP 200 and the message was confirmed delivered to the verified handset. This repository does not contain the API key or recipient phone number.
+> **How would you connect a customer-facing WhatsApp channel to approved knowledge and escalation logic without pretending the bot can answer account-specific questions it cannot verify?**
 
-## What the service demonstrates
+The result is a lightweight Python service that parses Infobip-style inbound webhooks, deduplicates messages, routes approved synthetic FAQs, escalates sensitive/unknown requests and can send outbound WhatsApp responses through the Infobip API.
 
-- Public HTTPS-ready Python service
-- Infobip-style inbound webhook parsing
-- Message-ID deduplication
-- Approved synthetic FAQ routing
-- Sensitive/account-specific and unknown-query escalation
-- Privacy-conscious in-memory audit events that omit message text
-- Real outbound WhatsApp text API client for live webhook replies
-- Health endpoint and simulation UI
-- Six automated tests
+> **Scope:** this is a synthetic customer-service demo, not a live banking application. No real bank accounts or customer data are connected.
 
-## Honest scope
+---
 
-This is a synthetic portfolio demonstration, not a real banking application. No real bank accounts are connected. A live two-way claim should only be made after the deployed webhook is configured in Infobip and an actual inbound WhatsApp message is received and replied to successfully.
+## Customer value
 
-## Environment variables
+A messaging solution like this is useful only if it improves service without creating a new control problem.
 
-Set these in the hosting provider, never in source control:
+The demo focuses on four practical outcomes:
+
+1. **faster self-service** for approved, low-risk questions;
+2. **controlled escalation** for sensitive, account-specific or unknown requests;
+3. **integration reliability** through message-ID deduplication and health checks;
+4. **privacy-conscious observability** through audit events that omit message text.
+
+In a real customer engagement I would measure containment rate, escalation rate, first-response time, duplicate-processing rate, delivery failures and customer satisfaction.
+
+---
+
+## Architecture
+
+```text
+Customer / WhatsApp
+        ↓
+Infobip channel
+        ↓
+HTTPS webhook
+        ↓
+Python service
+  ├── sender validation
+  ├── message-ID deduplication
+  ├── approved FAQ routing
+  ├── sensitive / unknown escalation
+  └── privacy-conscious audit event
+        ↓
+Infobip outbound API
+        ↓
+WhatsApp response
+```
+
+A simulation UI and health endpoint make the flow easy to demonstrate without exposing secrets.
+
+---
+
+## Verified evidence
+
+Before this repository was deployed, a real authenticated Infobip WhatsApp **trial-template API request returned HTTP 200 and the message was confirmed delivered to the verified handset**.
+
+The repository intentionally does **not** contain:
+- the API key;
+- the recipient phone number;
+- live customer data.
+
+It also includes **six automated tests** covering the service behavior.
+
+This verified milestone demonstrates outbound API connectivity. It should **not** be described as a completed production two-way WhatsApp deployment until a real inbound webhook is configured and validated end to end.
+
+---
+
+## Control decisions
+
+### Unknown does not mean improvise
+Only approved synthetic FAQ paths are answered automatically. Unknown or account-specific questions are escalated.
+
+### Duplicate events should not create duplicate actions
+Inbound message IDs are tracked so repeated webhook delivery does not generate repeated responses.
+
+### Audit without copying conversation content
+The demo records operational events while omitting message text from the audit surface.
+
+### Secrets remain outside source control
+Configuration is supplied through environment variables.
+
+---
+
+## Endpoints
+
+| Method | Route | Purpose |
+|---|---|---|
+| GET | `/` | demo UI |
+| GET | `/health` | service health |
+| GET | `/audit` | privacy-conscious operational events |
+| POST | `/simulate` | safe synthetic message flow |
+| POST | `/webhook` | live inbound path for configured sender |
+
+---
+
+## Configuration
+
+Required environment variables:
 
 - `INFOBIP_API_KEY`
 - `INFOBIP_BASE_URL`
@@ -32,25 +105,33 @@ Set these in the hosting provider, never in source control:
 
 See `.env.example` for non-secret placeholders.
 
-## Local run
+Run locally:
 
-`python app.py`
+```bash
+python app.py
+```
 
 Then open `http://localhost:8000/`.
 
-## Tests
+Run tests:
 
-`python -m unittest -v test_app.py`
+```bash
+python -m unittest -v test_app.py
+```
 
-## Endpoints
+---
 
-- `GET /` demo UI
-- `GET /health`
-- `GET /audit`
-- `POST /simulate` safe local/deployed simulation
-- `POST /webhook` live inbound path for the configured Infobip sender
+## Production hardening path
 
+The trial-sender demo uses the sender's direct **Forward to HTTP** configuration. A stronger implementation would add:
 
-## Webhook security note
+- Infobip Subscriptions;
+- HMAC/signature verification;
+- durable deduplication storage;
+- enterprise identity for operator/admin surfaces;
+- centralized logging and alerting;
+- real CRM/core-system integration;
+- explicit data-retention policy;
+- failure/retry handling and delivery observability.
 
-For the Infobip trial sender, the first live test uses the sender's direct **Forward to HTTP** configuration over HTTPS. The application validates that inbound payloads target the configured Infobip sender before sending a reply. For a stronger production-style setup, switch the sender to **Apply subscription** and use Infobip Subscriptions with HMAC authentication/signature verification. Do not describe this demo as production-secure until that hardening is implemented and tested.
+The demo is therefore evidence of **solution engineering, API integration and safe conversational-workflow design**, not a claim of production banking automation.
